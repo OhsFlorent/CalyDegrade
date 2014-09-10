@@ -1,0 +1,6 @@
+\\v-fic-01\user$\petrac01\mes documents\visual studio 2010\Projects\CalyDegrade\CalyDegrade\bin\Debug\CalyDegrade.exe
+\\v-fic-01\user$\petrac01\mes documents\visual studio 2010\Projects\CalyDegrade\CalyDegrade\bin\Debug\CalyDegrade.pdb
+\\v-fic-01\user$\petrac01\mes documents\visual studio 2010\Projects\CalyDegrade\CalyDegrade\obj\x86\Debug\CalyDegrade.exe
+\\v-fic-01\user$\petrac01\mes documents\visual studio 2010\Projects\CalyDegrade\CalyDegrade\obj\x86\Debug\CalyDegrade.pdb
+\\v-fic-01\user$\petrac01\mes documents\visual studio 2010\Projects\CalyDegrade\CalyDegrade\bin\Debug\System.Data.SQLite.dll
+\\v-fic-01\user$\petrac01\mes documents\visual studio 2010\Projects\CalyDegrade\CalyDegrade\obj\x86\Debug\CalyDegrade.csprojResolveAssemblyReference.cache
