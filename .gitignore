@@ -1,5 +1,3 @@
 bin/
-CalyDegrade.suo
-CalyDegrade.suo
-CalyDegrade/obj/x86/Release/CalyDegrade.csproj.FileListAbsolute.txt
-CalyDegrade/obj/x86/Release/DesignTimeResolveAssemblyReferencesInput.cache
+CalyDegrade/obj/
+CalyDegrade/bin/
