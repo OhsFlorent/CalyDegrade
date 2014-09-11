@@ -4,3 +4,5 @@
 \\v-fic-01\user$\petrac01\mes documents\visual studio 2010\Projects\CalyDegrade\CalyDegrade\obj\x86\Release\CalyDegrade.pdb
 \\v-fic-01\user$\petrac01\mes documents\visual studio 2010\Projects\CalyDegrade\CalyDegrade\bin\Release\System.Data.SQLite.dll
 \\v-fic-01\user$\petrac01\mes documents\visual studio 2010\Projects\CalyDegrade\CalyDegrade\obj\x86\Release\CalyDegrade.csprojResolveAssemblyReference.cache
+C:\Users\petrac01\dev\CalyDegrade\CalyDegrade\obj\x86\Release\CalyDegrade.exe
+C:\Users\petrac01\dev\CalyDegrade\CalyDegrade\obj\x86\Release\CalyDegrade.pdb

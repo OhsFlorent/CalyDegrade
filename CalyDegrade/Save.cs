@@ -95,7 +95,6 @@ namespace CalyDegrade
                 }
             }
 
-            //ListFilesToSave(BaseName);
             Program.DbFile.ExecuteQuery("DELETE FROM " + BaseName + " WHERE updated = 0");
             Program.DbFile.ExecuteQuery("UPDATE " + BaseName + " SET updated = 0");
         }
@@ -210,29 +209,6 @@ namespace CalyDegrade
                 Cl.Disconnect();
             }
         }
-
-        /*private static void ListFilesToSave(string BaseName)
-        {
-            Console.WriteLine("Creation de la liste de mise a jour des postes...");
-
-            string Req = string.Format("SELECT * FROM {0} WHERE updated=0 OR updated=1", BaseName);     //On cherche les fichiers à copier sur les postes. updated à 0 = fichier supprimé. updated à 1 = fichier modifié (donc à copier)
-            DataTable Result = Program.DbFile.Query(Req);
-            foreach (DataRow row in Result.Rows)
-            {
-                int State = int.Parse(row["updated"].ToString());
-                string FileName = row["name"].ToString();
-                string NewFileName = row["new_name"].ToString().Replace("'", "''");
-                int Type = int.Parse(row["type"].ToString());
-
-                foreach(Client Cl in Program.GetClientsList())
-                {
-                    if (Cl.GetBase() != BaseName)
-                        continue;
-                    string AddReq = string.Format("REPLACE INTO save_list VALUES ('{0}', '{1}', {2}, {3}, '{4}', '{5}')", FileName, NewFileName, Type, State, Cl.GetAddress(), BaseName);
-                    Program.DbFile.ExecuteQuery(AddReq);
-                }
-            }
-        }*/
 
         private static string MakeNewName(string nom, string prenom, string ipp, int num)
         {
