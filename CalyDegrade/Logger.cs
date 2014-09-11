@@ -29,7 +29,7 @@ namespace CalyDegrade
                 return;
 
             string message = string.Format(mess, arguments);
-            string Time = DateTime.Now.ToString("dd-MM-yyyy hh:mm:ss > ");
+            string Time = DateTime.Now.ToString("dd-MM-yyyy HH:mm:ss > ");
             LogFile.WriteLine(Time + message);
             Console.ForegroundColor = ConsoleColor.Red;
             Console.WriteLine(Time + message);
