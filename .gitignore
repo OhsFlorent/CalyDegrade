@@ -1,3 +1,4 @@
 bin/*
 CalyDegrade/obj/*
 CalyDegrade/bin/*
+*.suo

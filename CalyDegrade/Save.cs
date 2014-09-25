@@ -24,8 +24,11 @@ namespace CalyDegrade
         private const string field_prenom = "prenom";
         private const string field_typemot = "type_mot";
         private const string field_resumemot = "resume_mot";
+        private const string field_datemodif = "date_der_modif";
+        private const string field_nomauteur = "nom_pre";
+        private const string field_motdbhandle = "mot_dbhandle";
 
-        private const string ReqCalystene = "SELECT mot_suite_suiv_sej.num_mot, patient.ipp_adm, patient.nomm, patient.prenom, mot_suite_suiv_sej.type_mot, mot_suite_suiv_sej.resume_mot FROM patient JOIN sejour ON patient.num_dos_ad = sejour.num_dos_ad JOIN mot_suite_suiv_sej ON sejour.num = mot_suite_suiv_sej.num_sej WHERE (sejour.date_sort_reel is null OR sejour.date_cre > sejour.date_sort_reel) AND (mot_suite_suiv_sej.type_mot LIKE '%diabete%' OR mot_suite_suiv_sej.type_mot LIKE '%glycemie%' OR mot_suite_suiv_sej.type_mot LIKE '%pansement%' OR mot_suite_suiv_sej.resume_mot LIKE '%diabete%' OR mot_suite_suiv_sej.resume_mot LIKE '%glycemie%' OR mot_suite_suiv_sej.resume_mot LIKE '%pansement%')";
+        private const string ReqCalystene = "SELECT mot_suite_suiv_sej.num_mot, patient.ipp_adm, patient.nomm, patient.prenom, mot_suite_suiv_sej.type_mot, mot_suite_suiv_sej.resume_mot, mot_suite_suiv_sej.date_der_modif, personnel1.nom_pre, mot_suite_suiv_sej.mot_dbhandle FROM patient JOIN sejour ON patient.num_dos_ad = sejour.num_dos_ad JOIN mot_suite_suiv_sej ON sejour.num = mot_suite_suiv_sej.num_sej JOIN personnel personnel1 ON personnel1.num = mot_suite_suiv_sej.num_auteur WHERE (sejour.date_sort_reel is null OR sejour.date_cre > sejour.date_sort_reel) AND (mot_suite_suiv_sej.type_mot LIKE '%diabete%' OR mot_suite_suiv_sej.type_mot LIKE '%glycemie%' OR mot_suite_suiv_sej.type_mot LIKE '%pansement%' OR mot_suite_suiv_sej.resume_mot LIKE '%diabete%' OR mot_suite_suiv_sej.resume_mot LIKE '%glycemie%' OR mot_suite_suiv_sej.resume_mot LIKE '%pansement%')";
         private const string ReqPrepareSave = "REPLACE INTO {0} VALUES ('{1}', '{2}', {3}, {4}, 1, '{5}')";
 
         public static void PrepareSave(DBConnector DataBase, string dir) //prépare la sauvegarde sur les clients : liste les fichiers à copier et à supprimer
