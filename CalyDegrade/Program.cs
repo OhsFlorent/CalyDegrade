@@ -18,6 +18,7 @@ namespace CalyDegrade
         public const string FlFilesDir = "D:/Calystene/Flavigny/Bilans";
         public const string DirPansements = "Fiches_Pansements";
         public const string DirGlycemie = "Fiches_Glycemies";
+        public const string DirMots = "Mot_de_suite";
 
         private static DBConnector DbBainville;     //représente la connexion à la base de donnée de Bainville
         private static DBConnector DbFlavigny;      //représente la connexion à la base de donnée de Flavigny
@@ -80,7 +81,7 @@ namespace CalyDegrade
             //Save.CleanSaveClientsTable();
             Save.PrepareSave(DbBainville, BaFilesDir);
             Save.PrepareSave(DbFlavigny, FlFilesDir);
-            Save.ProcessSaveToClient();
+            //Save.ProcessSaveToClient();
 
             DbBainville.Close();
             DbFlavigny.Close();

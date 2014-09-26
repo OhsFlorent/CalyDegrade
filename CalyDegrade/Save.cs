@@ -30,6 +30,9 @@ namespace CalyDegrade
 
         private const string ReqCalystene = "SELECT mot_suite_suiv_sej.num_mot, patient.ipp_adm, patient.nomm, patient.prenom, mot_suite_suiv_sej.type_mot, mot_suite_suiv_sej.resume_mot, mot_suite_suiv_sej.date_der_modif, personnel1.nom_pre, mot_suite_suiv_sej.mot_dbhandle FROM patient JOIN sejour ON patient.num_dos_ad = sejour.num_dos_ad JOIN mot_suite_suiv_sej ON sejour.num = mot_suite_suiv_sej.num_sej JOIN personnel personnel1 ON personnel1.num = mot_suite_suiv_sej.num_redacteur WHERE (sejour.date_sort_reel is null OR sejour.date_cre > sejour.date_sort_reel) AND (mot_suite_suiv_sej.type_mot LIKE '%diabete%' OR mot_suite_suiv_sej.type_mot LIKE '%glycemie%' OR mot_suite_suiv_sej.type_mot LIKE '%pansement%' OR mot_suite_suiv_sej.resume_mot LIKE '%diabete%' OR mot_suite_suiv_sej.resume_mot LIKE '%glycemie%' OR mot_suite_suiv_sej.resume_mot LIKE '%pansement%')";
         private const string ReqPrepareSave = "REPLACE INTO {0} VALUES ('{1}', '{2}', {3}, {4}, 1, '{5}')";
+        private const string ReqPrepareMotSave = "REPLACE INTO {0} VALUES ({1},         '{2}',        '{3}',          '{4}',              '{5}',          '{6}',          '{7}',              '{8}',          '{9}',      '{10}',         {11},               1)";
+        /*                                                      base        numero mot  ipp adm     nom patient     prenom patient      type mot        resume mot      date modif mot      nom redacteur   text mot    nom fichier     date modif fichier  updated*/
+        private const string ReqGetTextMot = "SELECT text_value FROM mot_suite_strings WHERE string_id = {0} ORDER BY row_sequence ASC";
 
         public static void PrepareSave(DBConnector DataBase, string dir) //prépare la sauvegarde sur les clients : liste les fichiers à copier et à supprimer
         {
@@ -40,7 +43,51 @@ namespace CalyDegrade
 
             ListMot = DataBase.Query(ReqCalystene); 
 
+            /*TRAITEMENT DES MOTS DE SUITE*/
+            foreach (DataRow Row in ListMot.Rows)
+            {
+                int num_mot = int.Parse(Row[field_nummot].ToString());
+                string ipp_adm = Row[field_ippcegi].ToString();
+                string nom_patient = Row[field_nom].ToString();
+                string prenom_patient = Row[field_prenom].ToString();
+                string type_mot = Row[field_typemot].ToString();
+                string resume_mot = Row[field_resumemot].ToString();
+                string nom_auteur = Row[field_nomauteur].ToString();
+                DateTime DateLastModif = DateTime.Parse(Row[field_datemodif].ToString());
+                string sDateLastModif = DateLastModif.ToString().Split(new string[] { " " }, StringSplitOptions.None)[0];
 
+                if (Tools.DateToTimestamp(DateTime.Now) - Tools.DateToTimestamp(DateLastModif) < 259200)        //Si le mot de suite a moins de trois jours, on le sauvegarde
+                {
+                    //Parce que Calystene c'est de la mer... c'est pas bien, il faut découper le champ mot_dbhandle pour trouver le texte complet du mot. 
+                    //Ce texte ce trouve dans la table mot_suite_strings.
+                    string FullText = "";
+                    int StringID;
+                    string sStringID = Row[field_motdbhandle].ToString().Split(new string[] { ":" }, StringSplitOptions.None)[1];
+
+                    if (!int.TryParse(sStringID, out StringID))       //Si le numéro contient des lettres, on ignore.
+                        continue;
+
+                    DataTable ListText;
+                    ListText = DataBase.Query(string.Format(ReqGetTextMot, StringID));
+                    foreach (DataRow Text in ListText.Rows)
+                    {
+                        FullText += Text[0].ToString();
+                    }
+
+                    string NomPatient = nom_patient.Replace("'", "''");
+                    string PrenomPatient = prenom_patient.Replace("'", "''");
+                    string NomAuteur = nom_auteur.Replace("'", "''");
+                    string ResumeMot = resume_mot.Replace("'", "''");
+                    string FinalFullText = FullText.Replace("'", "''");
+                    string IppAdm = ipp_adm.Replace("'", "''");
+                    string MotFileName = MakeNewName(nom_patient, prenom_patient, ipp_adm, num_mot, ".txt");
+                    string ReqSaveMot = string.Format(ReqPrepareMotSave, BaseName + "_mots", num_mot, IppAdm, NomPatient, PrenomPatient, type_mot, ResumeMot, Row[field_datemodif].ToString(), NomAuteur, FinalFullText, MotFileName, Tools.DateToTimestamp(DateTime.Now));
+                    Program.DbFile.ExecuteQuery(ReqSaveMot);
+                }
+                
+            }
+            return;
+            /* TRAITEMENT DES FICHES EXCEL*/
             foreach (string FileName in Directory.GetFiles(dir))    //Boucle sur les fichiers sur le serveur Calystene
             {
                 FileInfo fInfo = new FileInfo(FileName);
@@ -87,7 +134,7 @@ namespace CalyDegrade
                     DataTable Query = Program.DbFile.Query(Req);
                     if (Query.Rows.Count == 0 || (long)Query.Rows[0][0] < Tools.DateToTimestamp(fInfo.LastWriteTime))      //On sauvegarde si le fichier n'existe pas ou si il a été modifié
                     {
-                        string ReqSave = string.Format(ReqPrepareSave, BaseName, fName, MakeNewName(PatientName, PatientSubName, Row[field_ippcegi].ToString(), NumMot), (int)MotType, LastModifDate, dir);
+                        string ReqSave = string.Format(ReqPrepareSave, BaseName, fName, MakeNewName(PatientName, PatientSubName, Row[field_ippcegi].ToString(), NumMot, ".xls"), (int)MotType, LastModifDate, dir);
                         Program.DbFile.ExecuteQuery(ReqSave);
                     }
                     else if (Query.Rows.Count > 0)      //Si le fichier existe et qu'il n'a pas été modifié, on indique qu'il ne faut pas le supprimer
@@ -97,6 +144,9 @@ namespace CalyDegrade
                     }
                 }
             }
+
+            Program.DbFile.ExecuteQuery("DELETE FROM " + BaseName + "_mots WHERE updated = 0");
+            Program.DbFile.ExecuteQuery("UPDATE " + BaseName + "_mots SET updated = 0");
 
             Program.DbFile.ExecuteQuery("DELETE FROM " + BaseName + " WHERE updated = 0");
             Program.DbFile.ExecuteQuery("UPDATE " + BaseName + " SET updated = 0");
@@ -115,6 +165,7 @@ namespace CalyDegrade
                 }
 
                 string FullDestinationDir = Cl.GetAddress() + @"\" + Cl.GetBase();
+                string FullDestinationMotsDir = Cl.GetAddress() + @"\" + Cl.GetBase() + @"\" + Program.DirMots;
                 string FullDestionationDirPansements = Cl.GetAddress() + @"\" + Cl.GetBase() + @"\" + Program.DirPansements;
                 string FullDestionationDirGlycemie = Cl.GetAddress() + @"\" + Cl.GetBase() + @"\" + Program.DirGlycemie;
                 string sFilesList = "";
@@ -125,6 +176,19 @@ namespace CalyDegrade
                     try
                     {
                         Directory.CreateDirectory(FullDestinationDir);
+                    }
+                    catch
+                    {
+                        Logger.Out("Erreur lors de la creation de dossier sur : " + Cl.GetAddress());
+                        continue;
+                    }
+                }
+
+                if (!Directory.Exists(FullDestinationMotsDir))
+                {
+                    try
+                    {
+                        Directory.CreateDirectory(FullDestinationMotsDir);
                     }
                     catch
                     {
@@ -160,6 +224,27 @@ namespace CalyDegrade
                 }
                 /*Fin de la creation des dossiers*/
 
+                /*SAUVEGARDES DES MOTS*/
+                foreach (string FileName in Directory.GetFiles(FullDestinationDir, "*.*", SearchOption.AllDirectories))
+                {
+                    string FinaleDir = "";
+                    int fType;
+                    string fName = Path.GetFileName(FileName);
+                    string Req = string.Format("SELECT * FROM {0} WHERE file_name = '{1}'", Cl.GetBase() + "_mots", fName.Replace("'", "''"));
+                    DataTable Result = Program.DbFile.Query(Req);
+
+                    sFilesList = sFilesList + "'" + fName.Replace("'", "''") + "',";
+
+                    if (Result.Rows.Count == 0)     //Si le fichier n'est pas dans la base du serveur, c'est qu'il doit être supprimé du client
+                        File.Delete(FileName);
+                    else
+                    {
+
+                    }
+                }
+
+                /*SAUVEGARDE DES FICHES*/
+                sFilesList = "";
                 foreach (string FileName in Directory.GetFiles(FullDestinationDir, "*.*", SearchOption.AllDirectories))
                 {
                     string FinaleDir = "";
@@ -213,9 +298,9 @@ namespace CalyDegrade
             }
         }
 
-        private static string MakeNewName(string nom, string prenom, string ipp, int num)
+        private static string MakeNewName(string nom, string prenom, string ipp, int num, string extension)
         {
-            return nom + "_" + prenom + "_" + ipp + "_" + num + ".xls";
+            return nom + "_" + prenom + "_" + ipp + "_" + num + extension;
         }
 
         public static void CleanSaveClientsTable()
