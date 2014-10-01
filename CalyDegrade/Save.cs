@@ -226,6 +226,7 @@ namespace CalyDegrade
                 /*Fin de la creation des dossiers*/
 
                 /*SAUVEGARDES DES MOTS*/
+                /*Etape 1 :boucle sur les fichiers du client. Suppresion des fichiers inutiles. recreation des fichiers qui ont été modifiés sur le client*/
                 foreach (string FileName in Directory.GetFiles(FullDestinationDir, "*.txt", SearchOption.AllDirectories))
                 {
                     string fName = Path.GetFileName(FileName);
@@ -250,7 +251,7 @@ namespace CalyDegrade
                         }
                     }
                 }
-
+                /*Etape 2 : on cherche et on créé les fichiers qui ne sont pas sur le client (nouveaux fichiers)*/
                 if (sFilesList == "")
                     DeleteReq = "SELECT * FROM " + Cl.GetBase() + "_mots";
                 else
@@ -265,6 +266,7 @@ namespace CalyDegrade
 
 
                 /*SAUVEGARDE DES FICHES*/
+                /*Etape 1 :boucle sur les fichiers du client. Suppresion des fichiers inutiles. recopie des fichiers qui ont été modifiés sur le client*/
                 sFilesList = "";
                 DeleteReq = "";
                 foreach (string FileName in Directory.GetFiles(FullDestinationDir, "*.xls", SearchOption.AllDirectories))
@@ -294,7 +296,7 @@ namespace CalyDegrade
                     }
                 }
 
-                
+                /*Etape 2 : on cherche et on copie les fichiers qui ne sont pas sur le client (nouveaux fichiers)*/
                 if (sFilesList == "")
                     DeleteReq = "SELECT * FROM " + Cl.GetBase();
                 else
@@ -343,6 +345,7 @@ namespace CalyDegrade
             Program.DbFile.ExecuteQuery(Req);
         }
 
+        /* MOT DE SUITE : Creation des fichiers txt depuis la liste provenant du resultat de la requete*/
         private static void CreateTxtFile(DataTable InfoTab, string DestFile)
         {
             StreamWriter TxtFile;
@@ -376,6 +379,7 @@ namespace CalyDegrade
             TxtFile.Close();
         }
 
+        /* MOT DE SUITE : Creation du fichier txt depuis une unique ligne du resultat de la requete*/ 
         private static void CreateTxtFile(DataRow Row, string DestFile)
         {
             StreamWriter TxtFile;
