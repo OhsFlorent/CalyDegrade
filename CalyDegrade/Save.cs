@@ -80,8 +80,19 @@ namespace CalyDegrade
                 string FinalFullText = FullText.Replace("'", "''");
                 string IppAdm = ipp_adm.Replace("'", "''");
                 string MotFileName = MakeNewName(nom_patient, prenom_patient, ipp_adm, ".txt").Replace("'", "''");
-                string ReqSaveMot = string.Format(ReqPrepareMotSave, BaseName + "_mots", num_mot, IppAdm, NomPatient, PrenomPatient, type_mot, ResumeMot, Row[field_datemodif].ToString(), NomAuteur, FinalFullText, MotFileName, Tools.DateToTimestamp(DateTime.Now));
-                Program.DbFile.ExecuteQuery(ReqSaveMot);
+
+                string Req = string.Format("SELECT file_last_modif FROM {0} WHERE num_mot = '{1}'", BaseName + "_mots", num_mot);
+                DataTable Query = Program.DbFile.Query(Req);
+                if (Query.Rows.Count == 0 || (long)Query.Rows[0][0] < Tools.DateToTimestamp(DateLastModif))      //On sauvegarde si le mot n'existe pas ou si il a été modifié
+                {
+                    string ReqSaveMot = string.Format(ReqPrepareMotSave, BaseName + "_mots", num_mot, IppAdm, NomPatient, PrenomPatient, type_mot, ResumeMot, Row[field_datemodif].ToString(), NomAuteur, FinalFullText, MotFileName, Tools.DateToTimestamp(DateTime.Now));
+                    Program.DbFile.ExecuteQuery(ReqSaveMot);
+                }
+                else if (Query.Rows.Count > 0)      //Si le mot existe et qu'il n'a pas été modifié, on indique qu'il ne faut pas le supprimer
+                {
+                    string ReqUpdated = string.Format("UPDATE {0} SET updated = 2 WHERE num_mot = '{1}'", BaseName + "_mots", num_mot);
+                    Program.DbFile.ExecuteQuery(ReqUpdated);
+                }
                 
             }
 
