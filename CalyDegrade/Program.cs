@@ -81,7 +81,7 @@ namespace CalyDegrade
             //Save.CleanSaveClientsTable();
             Save.PrepareSave(DbBainville, BaFilesDir);
             Save.PrepareSave(DbFlavigny, FlFilesDir);
-            //Save.ProcessSaveToClient();
+            Save.ProcessSaveToClient();
 
             DbBainville.Close();
             DbFlavigny.Close();
