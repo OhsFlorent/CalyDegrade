@@ -37,6 +37,7 @@ namespace CalyDegrade
 
         public static void PrepareSave(DBConnector DataBase, string dir) //prépare la sauvegarde sur les clients : liste les fichiers à copier et à supprimer
         {
+            
             Console.WriteLine("Creation de la liste des fichiers a copier et supprimer pour : " + DataBase.GetBaseName());
 
             DataTable ListMot;
@@ -47,6 +48,7 @@ namespace CalyDegrade
             /*TRAITEMENT DES MOTS DE SUITE*/
             foreach (DataRow Row in ListMot.Rows)
             {
+                
                 int num_mot = int.Parse(Row[field_nummot].ToString());
                 string ipp_adm = Row[field_ippcegi].ToString();
                 string nom_patient = Row[field_nom].ToString();
@@ -61,18 +63,26 @@ namespace CalyDegrade
                 //Ce texte ce trouve dans la table mot_suite_strings.
                 string FullText = "";
                 int StringID;
-                string sStringID = Row[field_motdbhandle].ToString().Split(new string[] { ":" }, StringSplitOptions.None)[1];
 
-                if (!int.TryParse(sStringID, out StringID))       //Si le numéro contient des lettres, on ignore.
-                    continue;
-
-                DataTable ListText;
-                ListText = DataBase.Query(string.Format(ReqGetTextMot, StringID));
-                foreach (DataRow Text in ListText.Rows)
+                if (!String.IsNullOrEmpty(Row[field_motdbhandle].ToString()))
                 {
-                    FullText += Text[0].ToString();
-                }
+                    string sStringID = Row[field_motdbhandle].ToString().Split(new string[] { ":" }, StringSplitOptions.None)[1];
+                    if (!int.TryParse(sStringID, out StringID))       //Si le numéro contient des lettres, on ignore.
+                        continue;
 
+                    DataTable ListText;
+                    ListText = DataBase.Query(string.Format(ReqGetTextMot, StringID));
+                    foreach (DataRow Text in ListText.Rows)
+                    {
+                        FullText += Text[0].ToString();
+                    }
+                }
+                else
+                {
+                    FullText += "--Aucun Texte--";
+                }
+                
+                /* On doubles les quotes pour éviter les erreurs SQL */
                 string NomPatient = nom_patient.Replace("'", "''");
                 string PrenomPatient = prenom_patient.Replace("'", "''");
                 string NomAuteur = nom_auteur.Replace("'", "''");
@@ -93,7 +103,6 @@ namespace CalyDegrade
                     string ReqUpdated = string.Format("UPDATE {0} SET updated = 2 WHERE num_mot = '{1}'", BaseName + "_mots", num_mot);
                     Program.DbFile.ExecuteQuery(ReqUpdated);
                 }
-                
             }
 
             /* TRAITEMENT DES FICHES EXCEL*/
@@ -154,7 +163,12 @@ namespace CalyDegrade
                     }
                 }
             }
-
+            
+            /* Lorsque le champ "updated" est à 1, le fichier ou le mot a été modifié
+             Lorsqu'il est à 2, le fichier ou le mot n'a pas été modifié mais existe toujours (patient en cours etc...)
+             Donc, lorsqu'il est à 0, c'est que le fichier ou le mot peut être supprimé. 
+             
+            On supprime toutes les lignes où ce champ est à 0, puis on le remet à cette valeur pour la prochaine execution du programme. */
             Program.DbFile.ExecuteQuery("DELETE FROM " + BaseName + "_mots WHERE updated = 0");
             Program.DbFile.ExecuteQuery("UPDATE " + BaseName + "_mots SET updated = 0");
 
