@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Globalization;
+using System.Text.RegularExpressions;
 
 namespace CalyDegrade
 {
@@ -38,6 +39,20 @@ namespace CalyDegrade
             }
 
             return (sb.ToString().Normalize(NormalizationForm.FormC));
+        }
+
+        public static bool IsValidEmail(string strIn)
+        {
+            // Return true if strIn is in valid e-mail format.
+            return Regex.IsMatch(strIn,
+                   @"^(?("")("".+?""@)|(([0-9a-zA-Z]((\.(?!\.))|[-!#\$%&'\*\+/=\?\^`\{\}\|~\w])*)(?<=[0-9a-zA-Z])@))" +
+                   @"(?(\[)(\[(\d{1,3}\.){3}\d{1,3}\])|(([0-9a-zA-Z][-\w]*[0-9a-zA-Z]\.)+[a-zA-Z]{2,6}))$");
+        }
+
+        public static bool IsValidIpAddress(string strIn)
+        {
+            // Return true if strIn is in valid IP address format.
+            return Regex.IsMatch(strIn, "[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}$");
         }
     }
 }

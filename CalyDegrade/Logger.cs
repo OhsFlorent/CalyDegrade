@@ -23,7 +23,7 @@ namespace CalyDegrade
             }
         }
 
-        public static void Out(string mess, params object[] arguments)
+        public static void Out(string mess, bool NotInMail = false, params object[] arguments)
         {
             if (LogFile == null)
                 return;
@@ -34,6 +34,9 @@ namespace CalyDegrade
             Console.ForegroundColor = ConsoleColor.Red;
             Console.WriteLine(Time + message);
             Console.ResetColor();
+
+            if (!NotInMail)
+                Program.SaveError = true;
         }
     }
 }
